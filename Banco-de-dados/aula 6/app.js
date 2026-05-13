@@ -12,68 +12,69 @@ const bodyParser    = require('body-parser')
 
 // ======================== CONTROLLER ========================
 
-// Importa a controller de filmes, que contém as regras de negócio (validação, lógica, etc.)
+// Importa a controller de filmes, responsável pelas regras de negócio dos filmes
 const controllerFilme = require('./controller/filme/controller_filmes.js')
 
+// Importa a controller de personagens, responsável pelas regras de negócio dos personagens
 const controllerPersonagem = require('./controller/personagem/controller_personagem.js')
 
 
 // ======================== CONFIG BODY ========================
 
-// Cria um middleware para permitir que a API receba e interprete JSON no body das requisições
+// Middleware que permite que a API entenda requisições com JSON no body
 const bodyParserJSON = bodyParser.json()
 
 
 // ======================== APP ========================
 
-// Cria a instância do Express (objeto principal da API)
+// Cria a aplicação principal do Express
 const app =  express()
 
 
 // ======================== CONFIG CORS ========================
 
-// Define as regras de acesso da API (quem pode acessar e como)
+// Configura quais origens, métodos e headers podem acessar a API
 const corsOptions = {
-    origin: ['*'], // Permite acesso de qualquer origem ("*" = todos)
-    methods: 'GET, POST, PUT, DELETE, OPTIONS', // Define quais métodos HTTP são permitidos
-    allowedHeaders: ['content-type', 'autorization'] // Define quais headers são permitidos (OBS: "authorization" está com erro de digitação)
+    origin: ['*'], // Permite qualquer origem acessar a API
+    methods: 'GET, POST, PUT, DELETE, OPTIONS', // Métodos HTTP permitidos
+    allowedHeaders: ['content-type', 'autorization'] // Headers permitidos (obs: "authorization" está escrito errado)
 }
 
-// Aplica as configurações de CORS na aplicação
+// Aplica o middleware de CORS na aplicação
 app.use(cors(corsOptions))
 
 
 // ======================== ENDPOINT: INSERT ========================
 
-// Endpoint para cadastrar (inserir) um novo filme
+// Rota para inserir um novo filme
 app.post('/v1/senai/locadora/filme', bodyParserJSON, async function(req, res){
 
-    // Recebe os dados enviados no body da requisição (JSON)
+    // Dados enviados pelo cliente no corpo da requisição
     let dados = req.body
  
-    // Captura o content-type do header da requisição
+    // Tipo de conteúdo da requisição (ex: application/json)
     let contentType = req.headers['content-type']
 
-    // Envia os dados para a controller realizar validação e inserção
+    // Envia os dados para a controller processar (validar + inserir)
     let result = await controllerFilme.inserirNovoFilme(dados, contentType)
 
-    // Define o status HTTP da resposta
+    // Define o status da resposta HTTP
     res.status(result.status_code)
 
-    // Retorna o resultado em formato JSON
+    // Retorna o resultado em JSON
     res.json(result)
 })
 
 
 // ======================== ENDPOINT: SELECT ALL ========================
 
-// Endpoint para listar todos os filmes
+// Rota para listar todos os filmes
 app.get('/v1/senai/locadora/lista/filme', async function(req, res) {
 
-    // Chama a controller para buscar todos os filmes
+    // Busca todos os filmes na controller
     let result = await controllerFilme.listaFilme()
 
-    // Define status HTTP
+    // Define o status HTTP
     res.status(result.status_code)
 
     // Retorna os dados
@@ -84,16 +85,16 @@ app.get('/v1/senai/locadora/lista/filme', async function(req, res) {
 
 // ======================== ENDPOINT: SELECT BY ID ========================
 
-// Endpoint para buscar um filme específico pelo ID
+// Rota para buscar um filme pelo ID
 app.get('/v1/senai/locadora/filme/:id', async function(req, res) {
 
-    // Captura o ID enviado na URL
+    // Pega o ID da URL
     let id = req.params.id
     
-    // Chama a controller para buscar o filme
+    // Busca o filme na controller
     let result = await controllerFilme.buscarFilme(id)
 
-    // Define status HTTP
+    // Define o status HTTP
     res.status(result.status_code)
 
     // Retorna o resultado
@@ -104,73 +105,152 @@ app.get('/v1/senai/locadora/filme/:id', async function(req, res) {
 
 // ======================== ENDPOINT: UPDATE ========================
 
-// Endpoint para atualizar um filme 
-// OBS: Está apenas declarado, sem função callback
+// Rota para atualizar um filme existente
 app.put('/v1/senai/locadora/filme/:id', bodyParserJSON, async function(req, res) {
 
-    // Captura o Content-Type enviado no header da requisição
-    // Exemplo: application/json
+    // Tipo de conteúdo enviado na requisição
     let contentType = req.headers['content-type']
 
-    // Captura o ID que vem na URL (parâmetro de rota)
-    // Exemplo: /filme/10 → id = 10
+    // ID do filme que será atualizado
     let id = req.params.id
 
-    // Captura os dados enviados no corpo da requisição (body)
-    // Esses dados geralmente vêm em formato JSON
+    // Novos dados enviados no body
     let dados = req.body
 
-    // Chama a função da controller responsável por atualizar o filme
-    // Envia:
-    // - dados atualizados (body)
-    // - id do registro (parâmetro da rota)
-    // - content-type (validação)
-    // OBS: a ordem dos parâmetros precisa ser igual à da função na controller
+    // Chama a controller para atualizar o filme
     let result = await controllerFilme.atualizarFilme(dados, id, contentType)
 
-    // Define o status HTTP da resposta (ex: 200, 400, 500)
+    // Define o status HTTP
     res.status(result.status_code)
 
-    // Retorna a resposta em formato JSON para o cliente
+    // Retorna a resposta
     res.json(result)
 })
 
 
+// ======================== ENDPOINT: DELETE ========================
+
+// Rota para deletar um filme pelo ID
 app.delete('/v1/senai/locadora/lista/filme/:id', async function(req, res) {
+
+    // Captura o ID da URL
     let id = req.params.id
 
+    // Chama a controller para excluir o filme
     let result = await controllerFilme.deletarFilme(id)
 
-        res.status(result.status_code)
-        res.json(result)
-})
-
-app.post('/v1/senai/locadora/filme/personagem', bodyParserJSON, async function(req, res){
-
-    // Recebe os dados enviados no body da requisição (JSON)
-    let dados = req.body
- 
-    // Captura o content-type do header da requisição
-    let contentType = req.headers['content-type']
-
-    // Envia os dados para a controller realizar validação e inserção
-    let result = await controllerPersonagem.inserirNovoPersonagem(dados, contentType)
-
-    // Define o status HTTP da resposta
+    // Define o status HTTP
     res.status(result.status_code)
 
-    // Retorna o resultado em formato JSON
+    // Retorna o resultado
     res.json(result)
 })
 
+
+// ======================== ENDPOINT: INSERT PERSONAGEM ========================
+
+// Rota para inserir um novo personagem
+app.post('/v1/senai/locadora/filme/personagem', bodyParserJSON, async function(req, res){
+
+    // Dados enviados no body
+    let dados = req.body
+ 
+    // Content-Type da requisição
+    let contentType = req.headers['content-type']
+
+    // Envia para a controller inserir o personagem
+    let result = await controllerPersonagem.inserirNovoPersonagem(dados, contentType)
+
+    // Status HTTP
+    res.status(result.status_code)
+
+    // Retorno JSON
+    res.json(result)
+})
+
+
+// ======================== ENDPOINT: SELECT PERSONAGEM BY ID ========================
+
+// Rota para buscar um personagem pelo ID
+app.get('/v1/senai/locadora/filme/personagem/:id', async function(req, res) {
+
+    // ID da URL
+    let id = req.params.id
+    
+    // Busca personagem
+    let result = await controllerPersonagem.buscarPersonagem(id)
+
+    // Status HTTP
+    res.status(result.status_code)
+
+    // Retorno
+    res.json(result)
+    
+})
+
+
+// ======================== ENDPOINT: DELETE PERSONAGEM ========================
+
+// Rota para deletar um personagem
+app.delete('/v1/senai/locadora/lista/filme/personagem/deletar/:id', async function(req, res) {
+
+    // ID do personagem
+    let id = req.params.id
+
+    // Chama a controller para excluir
+    let result = await controllerPersonagem.excluirPersonagem(id)
+
+    // Status HTTP
+    res.status(result.status_code)
+
+    // Retorno
+    res.json(result)
+})
+
+
+// ======================== ENDPOINT: LIST PERSONAGENS ========================
+
+// Rota para listar todos os personagens
+app.get('/v1/senai/locadora/lista/filme/personagem', async function(req, res) {
+
+    // Busca todos os personagens
+    let result = await controllerPersonagem.listarPersonagens()
+
+    // Status HTTP
+    res.status(result.status_code)
+
+    // Retorna os dados
+    res.json(result)
+    
+})
+
+app.put('/v1/senai/locadora/filme/personagem/atualizar/:id', bodyParserJSON, async function(req, res) {
+
+    // Tipo de conteúdo enviado na requisição
+    let contentType = req.headers['content-type']
+
+    // ID do filme que será atualizado
+    let id = req.params.id
+
+    // Novos dados enviados no body
+    let dados = req.body
+
+    // Chama a controller para atualizar o filme
+    let result = await controllerPersonagem.atualizarPersonagem(dados, id, contentType)
+
+    // Define o status HTTP
+    res.status(result.status_code)
+
+    // Retorna a resposta
+    res.json(result)
+})
 
 
 // ======================== SERVER ========================
 
-// Inicializa o servidor na porta 8080
-// A API ficará disponível em: http://localhost:8080
+// Inicia o servidor na porta 8080
 app.listen(8080, function(){
 
-    // Mensagem exibida no console quando o servidor inicia
+    // Mensagem exibida no console quando a API inicia
     console.log('arquivo pronto')
 })

@@ -76,7 +76,7 @@ const selectAllCharacter = async function(){
     try {
         // Query SQL para selecionar todos os registros da tabela
         // "order by id desc" ordena do maior ID para o menor (mais recente primeiro)
-        let sql = `select * from tbl_personagem order by id desc;`
+        let sql = `select * from tbl_personagem;`
 
         // Executa a query no banco
         let result = await knexConex.raw(sql)
