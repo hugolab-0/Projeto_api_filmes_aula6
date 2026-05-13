@@ -15,6 +15,8 @@ const bodyParser    = require('body-parser')
 // Importa a controller de filmes, que contém as regras de negócio (validação, lógica, etc.)
 const controllerFilme = require('./controller/filme/controller_filmes.js')
 
+const controllerPersonagem = require('./controller/personagem/controller_personagem.js')
+
 
 // ======================== CONFIG BODY ========================
 
@@ -152,7 +154,7 @@ app.post('/v1/senai/locadora/filme/personagem', bodyParserJSON, async function(r
     let contentType = req.headers['content-type']
 
     // Envia os dados para a controller realizar validação e inserção
-    let result = await controllerFilme.inserirNovoFilme(dados, contentType)
+    let result = await controllerPersonagem.inserirNovoPersonagem(dados, contentType)
 
     // Define o status HTTP da resposta
     res.status(result.status_code)

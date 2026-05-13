@@ -1,7 +1,6 @@
 // Import do arquivo de padronização de mensagens (respostas padrão da aplicação)
-const message_config = require('../modulo/configMessages.js')
+const message_config = require('../modulo/configMensagens.js')
 
-const validarPersonagem = require('../../controller/filme/controller_filmes.js')
 
 // Import do arquivo DAO para fazer o CRUD do personagem no banco de dados
 const personagemDAO = require('../../model/DAO/personagem/personagem.js')
@@ -15,7 +14,7 @@ const personagemDAO = require('../../model/DAO/personagem/personagem.js')
 const inserirNovoPersonagem = async function(personagem, contentType) {
     // função responsável por validar e enviar os dados para o DAO inserir no banco
 
-    let message = JSON.parse(JSON.stringify(config_message))
+    let message = JSON.parse(JSON.stringify(message_config))
 
      try {
            
@@ -23,8 +22,8 @@ const inserirNovoPersonagem = async function(personagem, contentType) {
            // Isso é importante para garantir que os dados estejam no formato correto
            if(String(contentType).toUpperCase() == 'APPLICATION/JSON') {
    
-               // Chama a função de validação dos dados do filme
-               let validar = await validarPersonagem.validarDados(personagem)
+               // Chama a função de validação dos dados do personagem
+               let validar = await validarDados(personagem)
    
                // Se a validação retornar algo, significa que houve erro
                if(validar) {
@@ -37,11 +36,9 @@ const inserirNovoPersonagem = async function(personagem, contentType) {
    
                    // Se o DAO retornou sucesso
                    if(result) { // 201 - criado com sucesso
-                       filme.id = id
                        message.DEFAULT_MESSAGE.status = message.SUCESS_INSERT_ITEM.status
                        message.DEFAULT_MESSAGE.status_code = message.SUCESS_INSERT_ITEM.status_code
                        message.DEFAULT_MESSAGE.message = message.SUCESS_INSERT_ITEM.message
-                       message.DEFAULT_MESSAGE.response = filme
                    }
                    else{ 
                        // Erro ao inserir no banco (camada model)
@@ -60,6 +57,16 @@ const inserirNovoPersonagem = async function(personagem, contentType) {
            // Caso ocorra algum erro inesperado no controller
            return message.ERROR_INTERNAL_SERVER_CONTROLLER
        }
+}
+
+const validarDados = async function(personagem) {
+    if(personagem.nome == '' || personagem.nome == null || personagem.nome.length > 80 || personagem.nome == undefined) {
+        message.ERROR_BAD_REQUEST.field =  '[NOME] INVALIDO'
+        return message.ERROR_BAD_REQUEST
+    }else {
+        // Se passou por todas as validações, retorna false (sem erro)
+        return false
+    }
 }
 
 // Função para atualizar um personagem existente
