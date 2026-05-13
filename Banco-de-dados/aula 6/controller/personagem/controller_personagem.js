@@ -1,6 +1,8 @@
 // Import do arquivo de padronização de mensagens (respostas padrão da aplicação)
 const message_config = require('../modulo/configMessages.js')
 
+const validarPersonagem = require('../../controller/filme/controller_filmes.js')
+
 // Import do arquivo DAO para fazer o CRUD do personagem no banco de dados
 const personagemDAO = require('../../model/DAO/personagem/personagem.js')
 
@@ -15,11 +17,49 @@ const inserirNovoPersonagem = async function(personagem, contentType) {
 
     let message = JSON.parse(JSON.stringify(config_message))
 
-    try {
-        
-    } catch (error) {
-        
-    }
+     try {
+           
+           // Verifica se o tipo de conteúdo da requisição é JSON
+           // Isso é importante para garantir que os dados estejam no formato correto
+           if(String(contentType).toUpperCase() == 'APPLICATION/JSON') {
+   
+               // Chama a função de validação dos dados do filme
+               let validar = await validarPersonagem.validarDados(personagem)
+   
+               // Se a validação retornar algo, significa que houve erro
+               if(validar) {
+                   return validar
+               }else{ 
+                   // Se passou na validação, envia os dados para o DAO inserir no banco
+                   let result = await personagemDAO.insertCharacter(personagem)
+   
+                   
+   
+                   // Se o DAO retornou sucesso
+                   if(result) { // 201 - criado com sucesso
+                       filme.id = id
+                       message.DEFAULT_MESSAGE.status = message.SUCESS_INSERT_ITEM.status
+                       message.DEFAULT_MESSAGE.status_code = message.SUCESS_INSERT_ITEM.status_code
+                       message.DEFAULT_MESSAGE.message = message.SUCESS_INSERT_ITEM.message
+                       message.DEFAULT_MESSAGE.response = filme
+                   }
+                   else{ 
+                       // Erro ao inserir no banco (camada model)
+                       return  message.ERROR_INTERNAL_SERVER_MODEL
+                   }
+   
+                   // Retorna a resposta padrão de sucesso
+                   return message.DEFAULT_MESSAGE
+               }
+           }else {
+               // Caso o content-type não seja JSON
+               return message.ERROR_CONTENT_TYPE
+           }
+   
+       } catch (error) {
+           // Caso ocorra algum erro inesperado no controller
+           return message.ERROR_INTERNAL_SERVER_CONTROLLER
+       }
 }
 
 // Função para atualizar um personagem existente

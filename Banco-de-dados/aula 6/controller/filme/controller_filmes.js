@@ -329,5 +329,6 @@ module.exports = {
     buscarFilme,
     listaFilme,
     atualizarFilme,
-    deletarFilme
+    deletarFilme,
+    validarDados
 }

@@ -143,6 +143,24 @@ app.delete('/v1/senai/locadora/lista/filme/:id', async function(req, res) {
         res.json(result)
 })
 
+app.post('/v1/senai/locadora/filme/personagem', bodyParserJSON, async function(req, res){
+
+    // Recebe os dados enviados no body da requisição (JSON)
+    let dados = req.body
+ 
+    // Captura o content-type do header da requisição
+    let contentType = req.headers['content-type']
+
+    // Envia os dados para a controller realizar validação e inserção
+    let result = await controllerFilme.inserirNovoFilme(dados, contentType)
+
+    // Define o status HTTP da resposta
+    res.status(result.status_code)
+
+    // Retorna o resultado em formato JSON
+    res.json(result)
+})
+
 
 
 // ======================== SERVER ========================
